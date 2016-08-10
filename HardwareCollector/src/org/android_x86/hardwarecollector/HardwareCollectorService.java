@@ -26,6 +26,8 @@ import android.graphics.SurfaceTexture;
 import android.hardware.input.InputManager;
 import android.opengl.EGL14;
 import android.opengl.GLES20;
+import android.os.SystemProperties;
+import android.system.Os;
 import android.util.Log;
 import android.view.InputDevice;
 
@@ -51,12 +53,15 @@ public class HardwareCollectorService extends IntentService {
     private static final String GA_ACTION_CPU_MODEL = "cpu_model";
     private static final String GA_ACTION_TOUCH_SCREEN_NAME = "touch_screen_name";
     private static final String GA_ACTION_HAS_BATTERY = "has_battery";
+    private static final String GA_ACTION_HAS_WIFI = "has_wifi";
+    private static final String GA_ACTION_HAS_ETHERNET = "has_ethernet";
     private static final String GA_LABEL_HAS_BATTERY = "battery";
     private static final String GA_LABEL_NO_BATTERY = "no_battery";
 
     private static final String LAST_INFO_FILE_NAME = "lastInfo.json";
     private static final String CPU_INFO_FILE = "/proc/cpuinfo";
     private static final String CPU_INFO_MODEL_NAME_PRE = "model name\t: ";
+    private static final String ETHERNET_SYS_FILE = "/sys/class/net/eth0/device/driver/module";
     private static final int TOUCHSCREEN_SOURCE_BIT = 4098;
 
     private Context mContext;
@@ -89,6 +94,7 @@ public class HardwareCollectorService extends IntentService {
         collectCPUInfo();
         collectTouchScreenInfo();
         collectBatteryInfo();
+        collectNetworkInfo();
     }
 
     private void collectOpenGLInfo() {
@@ -167,6 +173,20 @@ public class HardwareCollectorService extends IntentService {
                                     mContext, GA_CATEGORY, GA_ACTION_HAS_BATTERY);
         customEvent.setLabel(label);
         customEvent.sendWithSampling();
+    }
+
+    private void collectNetworkInfo() {
+        String wlan = SystemProperties.get("wlan.modname", "");
+        if (!wlan.isEmpty()) {
+            checkAndSend(GA_ACTION_HAS_WIFI, wlan);
+        }
+
+        try {
+            File mod = new File(Os.readlink(ETHERNET_SYS_FILE));
+            checkAndSend(GA_ACTION_HAS_ETHERNET, mod.getName());
+        } catch (Exception e) {
+            Log.d(TAG, "eth0 not found", e);
+        }
     }
 
     private void getLastInfo() {
