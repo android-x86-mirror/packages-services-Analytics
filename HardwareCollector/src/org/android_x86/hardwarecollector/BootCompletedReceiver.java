@@ -18,13 +18,16 @@ package org.android_x86.hardwarecollector;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.SystemProperties;
 
 public class BootCompletedReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent data) {
-        String action = data.getAction();
-        Intent startIntent = new Intent(context, HardwareCollectorService.class);
-        startIntent.setAction(action);
-        context.startService(startIntent);
+        if (SystemProperties.getBoolean("persist.sys.hw_statistics", true)) {
+            String action = data.getAction();
+            Intent startIntent = new Intent(context, HardwareCollectorService.class);
+            startIntent.setAction(action);
+            context.startService(startIntent);
+        }
     }
 }
