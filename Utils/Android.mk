@@ -8,6 +8,7 @@ LOCAL_SRC_FILES := $(call all-subdir-java-files)
 
 LOCAL_MODULE := analytics-utils
 LOCAL_MODULE_TAGS := optional
+LOCAL_SDK_VERSION := $(PLATFORM_SDK_VERSION)
 
 include $(BUILD_STATIC_JAVA_LIBRARY)
 
