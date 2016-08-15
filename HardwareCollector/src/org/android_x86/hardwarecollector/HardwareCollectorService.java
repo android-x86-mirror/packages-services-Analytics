@@ -55,6 +55,7 @@ public class HardwareCollectorService extends IntentService {
     private static final String GA_ACTION_HAS_BATTERY = "has_battery";
     private static final String GA_ACTION_HAS_WIFI = "has_wifi";
     private static final String GA_ACTION_HAS_ETHERNET = "has_ethernet";
+    private static final String GA_ACTION_HAS_SENSORS = "has_sensors";
     private static final String GA_LABEL_HAS_BATTERY = "battery";
     private static final String GA_LABEL_NO_BATTERY = "no_battery";
 
@@ -95,6 +96,7 @@ public class HardwareCollectorService extends IntentService {
         collectTouchScreenInfo();
         collectBatteryInfo();
         collectNetworkInfo();
+        collectSensorsInfo();
     }
 
     private void collectOpenGLInfo() {
@@ -186,6 +188,13 @@ public class HardwareCollectorService extends IntentService {
             checkAndSend(GA_ACTION_HAS_ETHERNET, mod.getName());
         } catch (Exception e) {
             Log.d(TAG, "eth0 not found", e);
+        }
+    }
+
+    private void collectSensorsInfo() {
+        String sensors = SystemProperties.get("ro.hardware.sensors", "");
+        if (!sensors.isEmpty() && !"kbd".equals(sensors)) {
+            checkAndSend(GA_ACTION_HAS_SENSORS, sensors);
         }
     }
 
