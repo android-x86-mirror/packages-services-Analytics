@@ -95,9 +95,6 @@ public class AnalyticsService extends ImmortalIntentService {
                 } else if (Intent.ACTION_SHUTDOWN.equals(action)) {
                     AnalyticsHelper.onShutdown(getBaseContext());
                     PowerStats.onScreenOff(context);
-                } else if (BootCompletedReceiver.ACTION_BOOT_COMPLETED.equals(action)) {
-                    AnalyticsHelper.onBootCompleted(getBaseContext());
-                    PowerStats.onScreenOn(context);
                 } else if (Intent.ACTION_POWER_CONNECTED.equals(action)) {
                     PowerStats.onPowerConnected(context);
                 } else if (Intent.ACTION_POWER_DISCONNECTED.equals(action)) {
@@ -111,7 +108,6 @@ public class AnalyticsService extends ImmortalIntentService {
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SHUTDOWN);
-        filter.addAction(BootCompletedReceiver.ACTION_BOOT_COMPLETED);
         filter.addAction(BootCompletedReceiver.ACTION_SEND_LOGS);
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addAction(Intent.ACTION_POWER_CONNECTED);
@@ -135,6 +131,11 @@ public class AnalyticsService extends ImmortalIntentService {
             eventHandler.onEvent(intent);
         } else if (!Intent.ACTION_BOOT_COMPLETED.equals(action)){
             Log.w(TAG, "unknow action :" + action);
+        } else {
+            // save boot completed time
+            saveScreenChangeTime(getCurrentTimeInSeconds());
+            onBootCompleted(intent);
+            PowerStats.onScreenOn(getBaseContext());
         }
         if (LOG) {
             Log.d(TAG, "Handle Intent: " + Util.toString(intent));
@@ -304,15 +305,6 @@ public class AnalyticsService extends ImmortalIntentService {
             @Override
             void onEvent(Intent intent) {
                 onHitScreen(intent);
-            }
-        });
-        mStaticEventHandlers.put(AnalyticsHelper.ACTION_BOOT_COMPLETED, new EventHandler() {
-            @Override
-            void onEvent(Intent intent) {
-                // save boot completed time
-                saveScreenChangeTime(getCurrentTimeInSeconds());
-
-                onBootCompleted(intent);
             }
         });
         mStaticEventHandlers.put(AnalyticsHelper.ACTION_SHUTDOWN, new EventHandler() {

@@ -47,7 +47,6 @@ public class AnalyticsHelper {
     public static final String ACTION_HIT_SCREEN = "org.android_x86.hit_screen";
     public static final String ACTION_SCREEN_ON = "org.android_x86.screen_on";
     public static final String ACTION_SCREEN_OFF = "org.android_x86.screen_off";
-    public static final String ACTION_BOOT_COMPLETED = "org.android_x86.boot_completed";
     public static final String ACTION_SHUTDOWN = "org.android_x86.shutdown";
     public static final String ACTION_EXCEPTION = "org.android_x86.exception";
     public static final String ACTION_CUSTOM_EVENT = "org.android_x86.custom_event";
@@ -178,7 +177,7 @@ public class AnalyticsHelper {
 
     public static void onBootCompleted(Context context) {
         Intent intent = getIntent();
-        intent.setAction(ACTION_BOOT_COMPLETED);
+        intent.setAction(Intent.ACTION_BOOT_COMPLETED);
         context.startService(intent);
     }
 

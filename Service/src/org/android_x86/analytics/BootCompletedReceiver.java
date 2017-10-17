@@ -31,23 +31,16 @@ import org.android_x86.analytics.AnalyticsHelper;
 public class BootCompletedReceiver extends BroadcastReceiver {
     private static final String TAG = "BootCompletedReceiver";
 
-    public static final String ACTION_BOOT_COMPLETED = "org.android_x86.boot_completed";
     public static final String ACTION_SEND_LOGS = "org.android_x86.send_logs";
 
     @Override
     public void onReceive(Context context, Intent data) {
         String action = data.getAction();
-        Intent startIntent = new Intent(action);
-        startIntent.setComponent(
-                new ComponentName(
-                        AnalyticsHelper.TARGET_PACKAGE_NAME,
-                        AnalyticsHelper.TARGET_CLASS_NAME));
         if (!Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             Log.w(TAG, "unknow action:" + action);
             return;
         }
-        context.startService(startIntent);
-        context.sendBroadcast(new Intent(ACTION_BOOT_COMPLETED));
+        AnalyticsHelper.onBootCompleted(context);
 
         // Set alarm to send logs periodically
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
