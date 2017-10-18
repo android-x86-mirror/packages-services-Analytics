@@ -1,5 +1,6 @@
 /*
  * Copyright 2016 Jide Technology Ltd.
+ * Copyright 2017 Android-x86 Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +31,7 @@ import android.os.SystemProperties;
 import android.util.Log;
 import org.android_x86.analytics.AnalyticsHelper;
 import org.android_x86.analytics.GeneralLogs;
+import org.android_x86.analytics.HardwareCollector;
 import org.android_x86.analytics.ImmortalIntentService;
 
 import java.util.HashMap;
@@ -207,6 +209,10 @@ public class AnalyticsService extends ImmortalIntentService {
         long bootTime = SystemClock.elapsedRealtime() / MS_IN_SECOND;
         mLogHelper.newEventBuilder(EVENT_CATEGORY_POWER, EVENT_BOOT_COMPLETED, null, bootTime)
                 .send();
+
+        if (SystemProperties.getBoolean("persist.sys.hw_statistics", true)) {
+            new HardwareCollector(this).uploadHardwareInfo();
+        }
     }
 
     private void onShutdown(Intent data) {

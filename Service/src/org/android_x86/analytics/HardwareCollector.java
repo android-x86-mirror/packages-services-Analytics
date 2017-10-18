@@ -1,5 +1,6 @@
 /*
  * Copyright 2016 Jide Technology Ltd.
+ * Copyright 2017 Android-x86 Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.android_x86.hardwarecollector;
+package org.android_x86.analytics;
 
-import org.android_x86.analytics.AnalyticsHelper;
-import org.android_x86.analytics.GeneralLogs;
-
-import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -30,8 +27,6 @@ import android.os.SystemProperties;
 import android.system.Os;
 import android.util.Log;
 import android.view.InputDevice;
-
-import org.json.JSONObject;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -45,8 +40,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class HardwareCollectorService extends IntentService {
-    private static final String TAG = "HardwareCollectorService";
+import org.android_x86.analytics.AnalyticsHelper;
+import org.android_x86.analytics.GeneralLogs;
+import org.json.JSONObject;
+
+public class HardwareCollector {
+    private static final String TAG = "HardwareCollector";
 
     private static final String GA_CATEGORY = "hardware_info";
     private static final String GA_ACTION_GPU_RENDERER = "gpu_renderer";
@@ -69,27 +68,12 @@ public class HardwareCollectorService extends IntentService {
     private File mInfoFile;
     private JSONObject mInfoJson;
 
-    public HardwareCollectorService() {
-        super("HardwareCollectorService");
+    public HardwareCollector(Context context) {
+        mContext = context;
+        mInfoFile = new File(context.getFilesDir(), LAST_INFO_FILE_NAME);
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mContext = getBaseContext();
-        mInfoFile = new File(getApplicationContext().getFilesDir(), LAST_INFO_FILE_NAME);
-    }
-
-    @Override
-    protected void onHandleIntent(Intent intent) {
-        String action = intent.getAction();
-        Log.i(TAG, "handle intent:" + intent);
-        if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
-            uploadHardwareInfo();
-        }
-    }
-
-    private void uploadHardwareInfo() {
+    public void uploadHardwareInfo() {
         getLastInfo();
         collectOpenGLInfo();
         collectCPUInfo();
@@ -169,7 +153,7 @@ public class HardwareCollectorService extends IntentService {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryIntent = mContext.registerReceiver(null, filter);
-        String label = batteryIntent.getBooleanExtra("present", false) ?
+        String label = (batteryIntent != null && batteryIntent.getBooleanExtra("present", false)) ?
                 GA_LABEL_HAS_BATTERY : GA_LABEL_NO_BATTERY;
         AnalyticsHelper.CustomEvent customEvent = AnalyticsHelper.newSystemCoreEvent(
                                     mContext, GA_CATEGORY, GA_ACTION_HAS_BATTERY);
