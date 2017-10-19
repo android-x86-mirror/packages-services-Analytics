@@ -147,6 +147,13 @@ public class Util {
             }
             return Build.VERSION.RELEASE + '-' + Build.VERSION.INCREMENTAL;
         }
+
+        /**
+         * Gets product version.
+         */
+        public static String getProductVersion() {
+            return Build.PRODUCT + ' ' + Build.VERSION.RELEASE + ' ' + Build.ID;
+        }
     }
 
     /* --- IOUtil --- */

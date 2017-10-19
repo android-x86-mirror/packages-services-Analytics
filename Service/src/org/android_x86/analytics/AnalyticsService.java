@@ -205,10 +205,18 @@ public class AnalyticsService extends ImmortalIntentService {
         return nowSeconds - latestChangeTime;
     }
 
+    private void sendPowerEvent(String event, long time, long powerOnNotSleep) {
+        LogHelper.LogBuilder builder = mLogHelper.newEventBuilder(EVENT_CATEGORY_POWER,
+                event, Util.BuildUtil.getProductVersion(), time);
+        if (powerOnNotSleep != -1) {
+            builder.setPower(powerOnNotSleep);
+        }
+        builder.send();
+    }
+
     private void onBootCompleted(Intent data) {
         long bootTime = SystemClock.elapsedRealtime() / MS_IN_SECOND;
-        mLogHelper.newEventBuilder(EVENT_CATEGORY_POWER, EVENT_BOOT_COMPLETED, null, bootTime)
-                .send();
+        sendPowerEvent(EVENT_BOOT_COMPLETED, bootTime, -1);
 
         if (SystemProperties.getBoolean("persist.sys.hw_statistics", true)) {
             new HardwareCollector(this).uploadHardwareInfo();
@@ -231,25 +239,17 @@ public class AnalyticsService extends ImmortalIntentService {
             Log.w(TAG, "onShutdown, cannot get data");
             return;
         }
-        mLogHelper.newEventBuilder(
-                EVENT_CATEGORY_POWER, EVENT_SHUTDOWN, null, powerOnIncludeSleep)
-                .setPower(powerOnNotSleep)
-                .send();
+        sendPowerEvent(EVENT_SHUTDOWN, powerOnIncludeSleep, powerOnNotSleep);
     }
 
     private void onScreenOn(Intent data) {
         Long screenOffDuration = getDurationAndSaveScreenChangeTime();
-
-        mLogHelper.newEventBuilder(
-                EVENT_CATEGORY_POWER, EVENT_SCREEN_ON, null, screenOffDuration)
-                .send();
+        sendPowerEvent(EVENT_SCREEN_ON, screenOffDuration, -1);
     }
 
     private void onScreenOff(Intent data) {
         Long screenOnDuration = getDurationAndSaveScreenChangeTime();
-        mLogHelper.newEventBuilder(
-                EVENT_CATEGORY_POWER, EVENT_SCREEN_OFF, null, screenOnDuration)
-                .send();
+        sendPowerEvent(EVENT_SCREEN_OFF, screenOnDuration, -1);
     }
 
     private static final String MAIN_THREAD = "main";
