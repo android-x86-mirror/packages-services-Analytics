@@ -89,13 +89,13 @@ public class AnalyticsService extends ImmortalIntentService {
                     Log.d(TAG, "Receive Intent: " + Util.toString(intent));
                 }
                 if (Intent.ACTION_SCREEN_OFF.equals(action)) {
-                    AnalyticsHelper.screenOff(getBaseContext());
+                    AnalyticsHelper.screenOff(context);
                     PowerStats.onScreenOff(context);
                 } else if (Intent.ACTION_SCREEN_ON.equals(action)) {
-                    AnalyticsHelper.screenOn(getBaseContext());
+                    AnalyticsHelper.screenOn(context);
                     PowerStats.onScreenOn(context);
                 } else if (Intent.ACTION_SHUTDOWN.equals(action)) {
-                    AnalyticsHelper.onShutdown(getBaseContext());
+                    AnalyticsHelper.onShutdown(context);
                     PowerStats.onScreenOff(context);
                 } else if (Intent.ACTION_POWER_CONNECTED.equals(action)) {
                     PowerStats.onPowerConnected(context);
@@ -114,20 +114,20 @@ public class AnalyticsService extends ImmortalIntentService {
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addAction(Intent.ACTION_POWER_CONNECTED);
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
-        getBaseContext().registerReceiver(mReceiver, filter);
+        registerReceiver(mReceiver, filter);
 
         mLogHelper = new LogHelper(this);
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        String action = intent.getAction();
         if (!mEnable){
             if (LOG) {
                 Log.d(TAG, "USAGE STATISTICS not enable");
             }
             return;
         }
+        String action = intent.getAction();
         EventHandler eventHandler = mStaticEventHandlers.get(action);
         if (eventHandler != null){
             eventHandler.onEvent(intent);
@@ -137,7 +137,7 @@ public class AnalyticsService extends ImmortalIntentService {
             // save boot completed time
             saveScreenChangeTime(getCurrentTimeInSeconds());
             onBootCompleted(intent);
-            PowerStats.onScreenOn(getBaseContext());
+            PowerStats.onScreenOn(this);
         }
         if (LOG) {
             Log.d(TAG, "Handle Intent: " + Util.toString(intent));
