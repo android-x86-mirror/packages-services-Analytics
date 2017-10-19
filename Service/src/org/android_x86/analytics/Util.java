@@ -402,7 +402,7 @@ public class Util {
             return new SignatureBuilder(
                     String.valueOf(System.currentTimeMillis()),
                     String.valueOf(new Random().nextLong()),
-                    Build.SERIAL);
+                    Build.getSerial());
         }
 
         /**
